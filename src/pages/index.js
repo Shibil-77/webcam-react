@@ -6,6 +6,8 @@ import Button from '@components/Button';
 
 import styles from '@styles/Home.module.scss';
 import Webcam from "react-webcam";
+import { Cloudinary } from '@cloudinary/url-gen';
+
 
 
 export default function Home() {
@@ -23,12 +25,12 @@ export default function Home() {
           image: ImageSrc
         })
 
-      }).then((r)=>r.json())
+      }).then((r) => r.json())
       setcldData(response)
       console.log(response);
     })()
-  
-    
+
+
 
   }, [ImageSrc])
 
@@ -51,7 +53,18 @@ export default function Home() {
     aspectRatio
   };
 
-const src = cldData?.secure_url || ImageSrc
+  const cld = new Cloudinary({
+    cloud: {
+      cloudName: process.env.Cloud_Name
+    },
+    url: {
+      secure: true // force https, set to false to force http
+    }
+  });
+
+ const cloudImage = cldData?.public_id && Cloudinary.image(cldData?.public_id)
+  const src = cloudImage?.toURL()|| ImageSrc
+
 
 
   return (
@@ -85,7 +98,7 @@ const src = cldData?.secure_url || ImageSrc
                 </Button>
               </li>
               <li>
-                <Button color="red" onClick={() => setImage(undefined)}>
+                <Button color="red" onClick={() => setImageSrc(undefined)}>
                   Reset
                 </Button>
               </li>
