@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Layout from '@components/Layout';
 import Container from '@components/Container';
 import Button from '@components/Button';
@@ -10,12 +10,31 @@ import Webcam from "react-webcam";
 
 export default function Home() {
 
-  const [image, setImage] = useState();
+  const [ImageSrc, setImageSrc] = useState();
+  const [cldData, setcldData] = useState();
   const webcamRef = useRef();
+
+  useEffect(() => {
+    if (!ImageSrc) return
+    (async function run() {
+      const response = await fetch('/api/cloudinary/upload', {
+        method: 'POST',
+        body: JSON.stringify({
+          image: ImageSrc
+        })
+
+      }).then((r)=>r.json())
+      setcldData(response)
+      console.log(response);
+    })()
+  
+    
+
+  }, [ImageSrc])
 
   function handleCaptureScreenshot() {
     const imageSrc = webcamRef.current.getScreenshot();
-    setImage(imageSrc);
+    setImageSrc(imageSrc);
   }
 
   const cameraWidth = 720;
@@ -32,7 +51,7 @@ export default function Home() {
     aspectRatio
   };
 
-
+const src = cldData?.secure_url || ImageSrc
 
 
   return (
@@ -49,11 +68,11 @@ export default function Home() {
           <div className={styles.stageContainer}>
             <div className={styles.stage}>
               {/* <img src="" /> */}
-              {image && (
-                <img src={image} />
+              {src && (
+                <img src={src} />
               )}
 
-              {!image && (
+              {!src && (
                 <Webcam ref={webcamRef} videoConstraints={videoConstraints} width={cameraWidth} height={cameraHeight} />
               )}            </div>
           </div>
